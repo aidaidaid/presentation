@@ -1,8 +1,16 @@
 import logo from './logo.svg';
 import './App.css';
 import { useDispatch, useSelector } from 'react-redux';
-import { forkEffect, getPosts, applyEffect } from './modules/saga/actions';
+import {
+  forkEffect,
+  getPosts,
+  applyEffect,
+  takeEffect,
+  takeLeadingEffect,
+  takeLatestEffect, takeEveryEffect, allEffect, raceEffect
+} from './modules/saga/actions';
 import { store } from './modules/redux';
+import {takeEveryWatcher} from "./modules/saga/take";
 
 const App = () => {
   // const selector = useSelector();
@@ -33,6 +41,12 @@ const App = () => {
       <button onClick={()=>action("PUT_RESOLVE")}>Race</button>
       <button onClick={()=>dispatch(forkEffect())}>Fork/Call/Spawn</button>
       <button onClick={()=>dispatch(applyEffect())}>Apply</button>
+      <button onClick={()=>dispatch(takeEffect())}>Take</button>
+      <button onClick={()=>dispatch(takeLeadingEffect())}>Take Leading</button>
+      <button onClick={()=>dispatch(takeLatestEffect())}>Take Latest</button>
+      <button onClick={()=>dispatch(takeEveryEffect())}>Take Every</button>
+      <button onClick={()=>dispatch(allEffect())}>All</button>
+      <button onClick={()=>dispatch(raceEffect())}>Racer</button>
     </div>
   )
 }
