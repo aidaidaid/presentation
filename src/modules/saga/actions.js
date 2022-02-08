@@ -18,11 +18,16 @@ export const throttleDebounceEffect = () => ({
     type:actionTypes.CHANGE_USERNAME,
 });
 
+export const cancelEffect = () => ({
+    type:actionTypes.CANCEL,
+});
+
 export const actionTypes = {
     GET_POSTS: 'GET_POSTS',
     PUT: 'PUT',
     PUT_RESOLVE: 'PUT_RESOLVE',
     FORK: 'FORK',
     APPLY: 'APPLY',
-    CHANGE_USERNAME: 'CHANGE_USERNAME'
+    CHANGE_USERNAME: 'CHANGE_USERNAME',
+    CANCEL: 'CANCEL'
 }

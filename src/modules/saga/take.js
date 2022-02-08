@@ -1,5 +1,5 @@
 import { act } from 'react-dom/cjs/react-dom-test-utils.production.min';
-import { takeEvery, call, apply, put, delay, putResolve, select, fork, spawn, join, throttle, debounce } from 'redux-saga/effects';
+import { takeEvery, call, apply, put, delay, putResolve, select, fork, spawn, join, throttle, debounce, cancelled, cancel, take } from 'redux-saga/effects';
 import { saveName } from '../api/user';
 import { setComments, setPosts } from '../redux/actions';
 import { actionTypes } from './actions';
@@ -85,6 +85,35 @@ function* takeWorker2() {
     }
 }
 
+// function* bgSync() {
+//     try {
+//       while (true) {
+//         // yield put(actions.requestStart())
+//         const result = yield call(getData, 'posts' );
+//         console.log('load posts', result);
+//         // yield put(actions.requestSuccess(result))
+//         yield delay(5000)
+//       }
+//     } finally {
+//       if (yield cancelled())
+//         console.log('Sync cancelled!');
+//         // yield put(actions.requestFailure('Sync cancelled!'))
+//     }
+//   }
+  
+// function* cancelWorker() {
+//     // while ( yield take('START_BACKGROUND_SYNC') ) {
+//         // starts the task in the background
+//         const bgSyncTask = yield fork(bgSync)
+
+//         // wait for the user stop action
+//         // yield take('STOP_BACKGROUND_SYNC')
+//         // user clicked stop. cancel the background task
+//         // this will cause the forked bgSync task to jump into its finally block
+//         yield cancel(bgSyncTask)
+//     // }
+// }
+
 
 ///////////////////////////////
 function* loadPosts() {
@@ -96,19 +125,27 @@ function* loadPosts() {
 }
 
 function* loadComments() {
-    const comments = yield call(getData, 'comments' );
-    console.log('load comments', comments);
-    yield put(setComments(comments));
-    // console.log('select effect', yield select());
-    console.log('select effect', yield select(store=>store.reducerInfo.comments)); //select
-    // console.log(comments);
+    try {
+        const comments = yield call(getData, 'comments' );
+        console.log('load comments', comments);
+        yield put(setComments(comments));
+        // console.log('select effect', yield select());
+        console.log('select effect', yield select(store=>store.reducerInfo.comments)); //select
+        // console.log(comments);
+    } finally { //cancelled
+        if (yield cancelled()) {
+            console.log('task was canceled');
+        }
+    }
 }
 
 function* forkWorker() { //fork and call
-    console.log("run parallel tasks");
-    yield fork(loadPosts);
-    yield fork(loadComments);
-    console.log("fininsh parallel tasks");
+        console.log("run parallel tasks");
+        yield fork(loadPosts);
+        const comments = yield fork(loadComments);
+        console.log("fininsh parallel tasks");
+        yield take(actionTypes.CANCEL);
+        yield cancel(comments); //cancel
 }
 
 // export function* forkWorker() { //join
@@ -118,6 +155,7 @@ function* forkWorker() { //fork and call
 //     const posts = yield join(task) //блокирует неблокирующую задачу и получает ее результат
 //     console.log("fininsh parallel tasks", posts);
 // }
+
 //////////////////////////////////
 
 function* changeUsername(action) {
@@ -128,7 +166,7 @@ function* changeUsername(action) {
 export function* throttleDebounceWatcher() { //throttle and debounce
     yield throttle(4000, actionTypes.CHANGE_USERNAME, changeUsername); //будет вызываться одно действие в течении n-секунд
     // yield debounce(2000, actionTypes.CHANGE_USERNAME, changeUsername); //ожидает окончания ввода(действия) и n-секунд
-  }
+}
 
 export function* takeWatcher() {
     yield takeEvery(actionTypes.PUT, takeWorker1);
@@ -145,6 +183,11 @@ export function* forkWatcher() {
 export function* applyWatcher() {
     yield takeEvery(actionTypes.APPLY, applyWorker);
 }
+
+// export function* cancelWatcher() {
+//     yield takeEvery(actionTypes.CANCEL, cancelWorker);
+// }
+
 
 
 // export function* allWatcher() {
