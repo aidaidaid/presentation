@@ -1,7 +1,7 @@
 import logo from './logo.svg';
 import './App.css';
 import { useDispatch, useSelector } from 'react-redux';
-import { forkEffect, getPosts, applyEffect } from './modules/saga/actions';
+import { forkEffect, getPosts, applyEffect, actionTypes } from './modules/saga/actions';
 import { store } from './modules/redux';
 
 const App = () => {
@@ -25,6 +25,16 @@ const App = () => {
   const action = e => {
     store.dispatch({type:e });
   }
+
+  const handleUsernameChange = (event) => {
+    dispatch({
+      type: actionTypes.CHANGE_USERNAME,
+      payload: {
+        username: event.target.value,
+      },
+    })
+  }
+
   return (
     <div>
       <button onClick={()=>action("PUT")}>Put</button>
@@ -33,6 +43,11 @@ const App = () => {
       <button onClick={()=>action("PUT_RESOLVE")}>Race</button>
       <button onClick={()=>dispatch(forkEffect())}>Fork/Call/Spawn</button>
       <button onClick={()=>dispatch(applyEffect())}>Apply</button>
+      <input
+        type="text"
+        placeholder="Username"
+        onChange={handleUsernameChange}>
+      </input>
     </div>
   )
 }

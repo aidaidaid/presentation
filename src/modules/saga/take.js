@@ -1,6 +1,7 @@
 import { act } from 'react-dom/cjs/react-dom-test-utils.production.min';
-import { takeEvery, call, apply, put, delay, putResolve, select, fork, spawn, join } from 'redux-saga/effects';
-import { setPosts } from '../redux/actions';
+import { takeEvery, call, apply, put, delay, putResolve, select, fork, spawn, join, throttle, debounce } from 'redux-saga/effects';
+import { saveName } from '../api/user';
+import { setComments, setPosts } from '../redux/actions';
 import { actionTypes } from './actions';
 
 const delayFN = (t, url) => {
@@ -20,7 +21,7 @@ const fetchSmth = result => dispatch =>
   delay(500).then(() => dispatch({type: 'SET_POSTS',payload:result}));
 
 /////////////////////////////////////
-export function* applyWorker() { //apply и call с контекстом
+function* applyWorker() { //apply и call с контекстом
   const fetchWithApplyFN = () => {
     return {
       getUrl(id) {
@@ -41,7 +42,7 @@ export function* applyWorker() { //apply и call с контекстом
 }
 //////////////////////////////////////
 
-export function* takeWorker1() {
+function* takeWorker1() {
     try {
         const result = yield call(getData, `posts`);
         // const result = yield call(delayFN, 1000, 'posts' );
@@ -63,7 +64,7 @@ export function* takeWorker1() {
     }
 }
 
-export function* takeWorker2() {
+function* takeWorker2() {
     try {
         const result = yield call(getData, `https://jsonplaceholder.typicode.com/posts`);
         // const result = yield fork(delayFN, 2000, 'posts' );
@@ -97,14 +98,17 @@ function* loadPosts() {
 function* loadComments() {
     const comments = yield call(getData, 'comments' );
     console.log('load comments', comments);
+    yield put(setComments(comments));
+    // console.log('select effect', yield select());
+    console.log('select effect', yield select(store=>store.reducerInfo.comments)); //select
     // console.log(comments);
 }
 
-export function* forkWorker() { //fork and call
-        console.log("run parallel tasks");
-        yield fork(loadPosts);
-        yield fork(loadComments);
-        console.log("fininsh parallel tasks");
+function* forkWorker() { //fork and call
+    console.log("run parallel tasks");
+    yield fork(loadPosts);
+    yield fork(loadComments);
+    console.log("fininsh parallel tasks");
 }
 
 // export function* forkWorker() { //join
@@ -115,6 +119,16 @@ export function* forkWorker() { //fork and call
 //     console.log("fininsh parallel tasks", posts);
 // }
 //////////////////////////////////
+
+function* changeUsername(action) {
+    console.log('username', action.payload.username)
+    yield call(saveName, action.payload.username)
+  }
+
+export function* throttleDebounceWatcher() { //throttle and debounce
+    yield throttle(4000, actionTypes.CHANGE_USERNAME, changeUsername); //будет вызываться одно действие в течении n-секунд
+    // yield debounce(2000, actionTypes.CHANGE_USERNAME, changeUsername); //ожидает окончания ввода(действия) и n-секунд
+  }
 
 export function* takeWatcher() {
     yield takeEvery(actionTypes.PUT, takeWorker1);

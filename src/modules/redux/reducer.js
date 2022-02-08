@@ -1,7 +1,8 @@
 import { types } from "./actionTypes";
 
 const initialState = {
-    posts: []
+    posts: [],
+    comments: []
 };
 
 function reducerInfo (state = initialState, action) {
@@ -10,6 +11,11 @@ function reducerInfo (state = initialState, action) {
             return{
                 ...state,
                 posts: action.payload,
+            }
+        case types.SET_COMMENTS:
+            return{
+                ...state,
+                comments: action.payload,
             }
         default:
             return state;
