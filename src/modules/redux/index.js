@@ -10,7 +10,6 @@ const reducer = combineReducers({
 const sagaMiddleware = createSagaMiddleware();
 
 export const store = createStore(reducer, 
-    window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__(
-    applyMiddleware(sagaMiddleware)));
+    window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__(applyMiddleware(sagaMiddleware)));
 
 sagaMiddleware.run(rootSaga);

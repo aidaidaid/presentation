@@ -9,8 +9,8 @@ import {
   takeLeadingEffect,
   takeLatestEffect, takeEveryEffect, allEffect, raceEffect
 } from './modules/saga/actions';
+import { forkEffect, getPosts, applyEffect, actionTypes, cancelEffect } from './modules/saga/actions';
 import { store } from './modules/redux';
-import {takeEveryWatcher} from "./modules/saga/take";
 
 const App = () => {
   // const selector = useSelector();
@@ -33,6 +33,16 @@ const App = () => {
   const action = e => {
     store.dispatch({type:e });
   }
+
+  const handleUsernameChange = (event) => {
+    dispatch({
+      type: actionTypes.CHANGE_USERNAME,
+      payload: {
+        username: event.target.value,
+      },
+    })
+  }
+
   return (
     <div>
       <button onClick={()=>action("PUT")}>Put</button>
@@ -47,6 +57,12 @@ const App = () => {
       <button onClick={()=>dispatch(takeEveryEffect())}>Take Every</button>
       <button onClick={()=>dispatch(allEffect())}>All</button>
       <button onClick={()=>dispatch(raceEffect())}>Racer</button>
+      <button onClick={()=>dispatch(cancelEffect())}>Cancel</button>
+      <input
+        type="text"
+        placeholder="Username"
+        onChange={handleUsernameChange}>
+      </input>
     </div>
   )
 }

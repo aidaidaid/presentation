@@ -1,6 +1,9 @@
 import { act } from 'react-dom/cjs/react-dom-test-utils.production.min';
 import { takeEvery, call, apply, put, delay, putResolve, select, fork, spawn, join, take, takeLeading, takeLatest, all, race } from 'redux-saga/effects';
 import { setPosts } from '../redux/actions';
+import { takeEvery, call, apply, put, delay, putResolve, select, fork, spawn, join, throttle, debounce, cancelled, cancel, take } from 'redux-saga/effects';
+import { saveName } from '../api/user';
+import { setComments, setPosts } from '../redux/actions';
 import { actionTypes } from './actions';
 
 const delayFN = (t, url) => {
@@ -20,7 +23,7 @@ const fetchSmth = result => dispatch =>
   delay(500).then(() => dispatch({type: 'SET_POSTS',payload:result}));
 
 /////////////////////////////////////
-export function* applyWorker() { //apply и call с контекстом
+function* applyWorker() { //apply и call с контекстом
   const fetchWithApplyFN = () => {
     return {
       getUrl(id) {
@@ -84,6 +87,78 @@ export function* applyWorker() { //apply и call с контекстом
 //     }
 // }
 //
+function* takeWorker1() {
+    try {
+        const result = yield call(getData, `posts`);
+        // const result = yield call(delayFN, 1000, 'posts' );
+        // if(actionTypes.PUT){
+        yield put(setPosts(result));
+            // yield put(fetchSmth(result));
+            console.log("state after PUT", yield select());
+        // }
+        // else if(actionTypes.PUT_RESOLVE){
+        //     yield putResolve(fetchSmth(result));
+        //     console.log("state after PUT_RESOLVE", yield select());
+        // }
+        // yield put(setPosts(result)); //вызывает dispatch
+        console.log(result)
+        
+    }
+    catch (error) {
+        console.warn(error);
+    }
+}
+
+function* takeWorker2() {
+    try {
+        const result = yield call(getData, `https://jsonplaceholder.typicode.com/posts`);
+        // const result = yield fork(delayFN, 2000, 'posts' );
+        // if(actionTypes.PUT){
+        //     yield put(fetchSmth(result));
+        //     console.log("state after PUT", yield select());
+        // }
+        // else if(actionTypes.PUT_RESOLVE){
+            yield putResolve(fetchSmth(result));
+            console.log("state after PUT_RESOLVE", yield select());
+        // }
+        // yield put(setPosts(result));
+        console.log(result)
+        
+    }
+    catch (error) {
+        console.warn(error);
+    }
+}
+
+// function* bgSync() {
+//     try {
+//       while (true) {
+//         // yield put(actions.requestStart())
+//         const result = yield call(getData, 'posts' );
+//         console.log('load posts', result);
+//         // yield put(actions.requestSuccess(result))
+//         yield delay(5000)
+//       }
+//     } finally {
+//       if (yield cancelled())
+//         console.log('Sync cancelled!');
+//         // yield put(actions.requestFailure('Sync cancelled!'))
+//     }
+//   }
+
+// function* cancelWorker() {
+//     // while ( yield take('START_BACKGROUND_SYNC') ) {
+//         // starts the task in the background
+//         const bgSyncTask = yield fork(bgSync)
+
+//         // wait for the user stop action
+//         // yield take('STOP_BACKGROUND_SYNC')
+//         // user clicked stop. cancel the background task
+//         // this will cause the forked bgSync task to jump into its finally block
+//         yield cancel(bgSyncTask)
+//     // }
+// }
+
 
 ///////////////////////////////
 export function* loadPosts() {
@@ -97,13 +172,28 @@ export function* loadComments() {
     const comments = yield call(getData, 'comments' );
     console.log('load comments', comments);
     return comments;
+function* loadComments() {
+    try {
+        const comments = yield call(getData, 'comments' );
+        console.log('load comments', comments);
+        yield put(setComments(comments));
+        // console.log('select effect', yield select());
+        console.log('select effect', yield select(store=>store.reducerInfo.comments)); //select
+        // console.log(comments);
+    } finally { //cancelled
+        if (yield cancelled()) {
+            console.log('task was canceled');
+        }
+    }
 }
 
-export function* forkWorker() { //fork and call
+function* forkWorker() { //fork and call
         console.log("run parallel tasks");
         yield fork(loadPosts);
-        yield fork(loadComments);
+        const comments = yield fork(loadComments);
         console.log("fininsh parallel tasks");
+        yield take(actionTypes.CANCEL);
+        yield cancel(comments); //cancel
 }
 
 // export function* forkWorker() { //join
@@ -113,11 +203,24 @@ export function* forkWorker() { //fork and call
 //     const posts = yield join(task) //блокирует неблокирующую задачу и получает ее результат
 //     console.log("fininsh parallel tasks", posts);
 // }
+
 //////////////////////////////////
 
 function* takeWorker() {
   const comments = yield call(getData, 'comments' );
   console.log('LOADED', comments);
+function* changeUsername(action) {
+    console.log('username', action.payload.username)
+    yield call(saveName, action.payload.username)
+  }
+
+export function* throttleDebounceWatcher() { //throttle and debounce
+    yield throttle(4000, actionTypes.CHANGE_USERNAME, changeUsername); //будет вызываться одно действие в течении n-секунд
+    // yield debounce(2000, actionTypes.CHANGE_USERNAME, changeUsername); //ожидает окончания ввода(действия) и n-секунд
+}
+
+export function* takeWatcher() {
+    yield takeEvery(actionTypes.PUT, takeWorker1);
 }
 
 function* allWorker() { //all as array
@@ -165,6 +268,11 @@ export function* forkWatcher() {
 export function* applyWatcher() {
     yield takeEvery(actionTypes.APPLY, applyWorker);
 }
+
+// export function* cancelWatcher() {
+//     yield takeEvery(actionTypes.CANCEL, cancelWorker);
+// }
+
 
 /////////////////////////////////////////////////////////////// TAKE EFFECTS
 

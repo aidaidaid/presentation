@@ -14,6 +14,14 @@ export const applyEffect = () => ({
     type:actionTypes.APPLY,
 });
 
+export const throttleDebounceEffect = () => ({
+    type:actionTypes.CHANGE_USERNAME,
+});
+
+export const cancelEffect = () => ({
+    type:actionTypes.CANCEL,
+});
+
 export const takeEffect = () => ({
     type:actionTypes.TAKE,
 });
@@ -50,4 +58,6 @@ export const actionTypes = {
     TAKE_EVERY: 'TAKE_EVERY',
     ALL: 'ALL',
     RACE: 'RACE',
+    CHANGE_USERNAME: 'CHANGE_USERNAME',
+    CANCEL: 'CANCEL'
 }
