@@ -22,8 +22,8 @@ const fetchSmth = result => dispatch =>
 
 export function* takeWorker1() {
     try {
-        // const result = yield call(getData, `posts`);
-        const result = yield call(delayFN, 1000, 'posts' );
+        const result = yield call(getData, `posts`);
+        // const result = yield call(delayFN, 1000, 'posts' );
         // if(actionTypes.PUT){
         yield put(setPosts(result));
             // yield put(fetchSmth(result));
@@ -44,8 +44,8 @@ export function* takeWorker1() {
 
 export function* takeWorker2() {
     try {
-        // const result = yield call(getData, `https://jsonplaceholder.typicode.com/posts`);
-        const result = yield fork(delayFN, 2000, 'posts' );
+        const result = yield call(getData, `https://jsonplaceholder.typicode.com/posts`);
+        // const result = yield fork(delayFN, 2000, 'posts' );
         // if(actionTypes.PUT){
         //     yield put(fetchSmth(result));
         //     console.log("state after PUT", yield select());
@@ -63,12 +63,44 @@ export function* takeWorker2() {
     }
 }
 
+
+///////////////////////////////
+function* loadPosts() {
+    const posts = yield call(getData, 'posts' );
+    console.log('load posts');
+    console.log(posts);
+}
+
+function* loadComments() {
+    const comments = yield call(getData, 'comments' );
+    console.log('load comments');
+    console.log(comments);
+}
+
+export function* forkWorker() { //fork and call
+    try {
+        console.log("run parallel tasks");
+        yield fork(loadPosts);
+        yield fork(loadComments);
+        console.log("fininsh parallel tasks");
+        
+    }
+    catch (error) {
+        console.warn(error);
+    }
+}
+//////////////////////////////////
+
 export function* takeWatcher() {
     yield takeEvery(actionTypes.PUT, takeWorker1);
 }
 
 export function* takeWatcher1() {
     yield takeEvery(actionTypes.PUT_RESOLVE, takeWorker2);
+}
+
+export function* forkWatcher() {
+    yield takeEvery(actionTypes.FORK, forkWorker);
 }
 
 // export function* allWatcher() {
