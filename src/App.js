@@ -1,7 +1,7 @@
 import logo from './logo.svg';
 import './App.css';
 import { useDispatch, useSelector } from 'react-redux';
-import { forkEffect, getPosts } from './modules/saga/actions';
+import { forkEffect, getPosts, applyEffect } from './modules/saga/actions';
 import { store } from './modules/redux';
 
 const App = () => {
@@ -31,7 +31,8 @@ const App = () => {
       <button onClick={()=>action("PUT_RESOLVE")}>PutResolve</button>
       <button onClick={()=>action("PUT_RESOLVE")}>All</button>
       <button onClick={()=>action("PUT_RESOLVE")}>Race</button>
-      <button onClick={()=>dispatch(forkEffect())}>Fork</button>
+      <button onClick={()=>dispatch(forkEffect())}>Fork/Call/Spawn</button>
+      <button onClick={()=>dispatch(applyEffect())}>Apply</button>
     </div>
   )
 }
