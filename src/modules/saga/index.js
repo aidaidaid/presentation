@@ -1,14 +1,5 @@
 import { spawn } from '@redux-saga/core/effects';
-import {
-    takeWatcher,
-    takeWatcher1,
-    forkWatcher,
-    applyWatcher,
-    takeLeadingWatcher,
-    takeEveryWatcher,
-    takeLatestWatcher, allWatcher, raceWatcher
-} from './take';
-import { takeWatcher, takeWatcher1, forkWatcher, applyWatcher, throttleDebounceWatcher, cancelWatcher } from './take';
+import { takeWatcher, takeWatcher1, forkWatcher, applyWatcher, throttleDebounceWatcher, cancelWatcher, allWatcher, raceWatcher, takeLeadingWatcher, takeEveryWatcher, takeLatestWatcher } from './take';
 
 function* rootSaga() {
     yield spawn(takeWatcher);
