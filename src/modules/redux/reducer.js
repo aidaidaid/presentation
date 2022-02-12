@@ -2,7 +2,8 @@ import { types } from "./actionTypes";
 
 const initialState = {
     posts: [],
-    comments: []
+    comments: [],
+    filesUploading: 0
 };
 
 function reducerInfo (state = initialState, action) {
@@ -17,6 +18,11 @@ function reducerInfo (state = initialState, action) {
             return{
                 ...state,
                 comments: action.payload,
+            }
+        case types.SET_UPLOADING:
+            return{
+                ...state,
+                filesUploading: action.payload,
             }
         default:
             return state;

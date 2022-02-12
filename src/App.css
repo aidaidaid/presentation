@@ -53,3 +53,11 @@ button{
   border: blueviolet solid 2px;
   letter-spacing: 0.1em;
 }
+
+.common {
+  display: flex;
+}
+
+.common div {
+  flex-direction: column;
+}

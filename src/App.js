@@ -1,20 +1,12 @@
-import logo from './logo.svg';
 import './App.css';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  forkEffect,
-  getPosts,
-  applyEffect,
-  takeEffect,
-  takeLeadingEffect,
-  takeLatestEffect, takeEveryEffect, allEffect, raceEffect
-} from './modules/saga/actions';
-import { forkEffect, getPosts, applyEffect, actionTypes, cancelEffect } from './modules/saga/actions';
+import { forkEffect, getPosts, applyEffect, cancelEffect, takeEffect, takeLeadingEffect, takeLatestEffect, takeEveryEffect, allEffect, raceEffect, getPostsActionChannel, actionChannel, eventChannel, eventChannelUnsubscribe, channel } from './modules/saga/actions';
 import { store } from './modules/redux';
+import { actionTypes } from './modules/saga/actionTypes';
 
 const App = () => {
-  // const selector = useSelector();
   const dispatch = useDispatch();
+  const filesUploadingProgress = useSelector((state) => state.filesUploading);
 
   // const getPost = () => {
   //   debugger
@@ -43,26 +35,40 @@ const App = () => {
     })
   }
 
+  const handleActionChannel = () => {
+    try {
+      for (let dispatchId = 1; dispatchId <= 4; dispatchId++) {
+        dispatch(actionChannel({userId: 1, dispatchId}))
+      }
+    } catch (e) {
+      console.log('error', e.message) // error Channel's Buffer overflow!
+    }
+  }
+  
   return (
+    <div className='common'>
+      <div>
+        <button onClick={()=>dispatch(takeEffect())}>Take</button>
+        <button onClick={()=>dispatch(takeLeadingEffect())}>Take Leading</button>
+        <button onClick={()=>dispatch(takeLatestEffect())}>Take Latest</button>
+        <button onClick={()=>dispatch(takeEveryEffect())}>Take Every</button>
+        <button onClick={()=>dispatch(allEffect())}>All</button>
+        <button onClick={()=>dispatch(raceEffect())}>Racer</button>
+      </div>
     <div>
-      <button onClick={()=>action("PUT")}>Put</button>
-      <button onClick={()=>action("PUT_RESOLVE")}>PutResolve</button>
-      <button onClick={()=>action("PUT_RESOLVE")}>All</button>
-      <button onClick={()=>action("PUT_RESOLVE")}>Race</button>
+      {/* <button onClick={()=>action("PUT")}>Put</button>
+      <button onClick={()=>action("PUT_RESOLVE")}>PutResolve</button> */}
       <button onClick={()=>dispatch(forkEffect())}>Fork/Call/Spawn</button>
       <button onClick={()=>dispatch(applyEffect())}>Apply</button>
-      <button onClick={()=>dispatch(takeEffect())}>Take</button>
-      <button onClick={()=>dispatch(takeLeadingEffect())}>Take Leading</button>
-      <button onClick={()=>dispatch(takeLatestEffect())}>Take Latest</button>
-      <button onClick={()=>dispatch(takeEveryEffect())}>Take Every</button>
-      <button onClick={()=>dispatch(allEffect())}>All</button>
-      <button onClick={()=>dispatch(raceEffect())}>Racer</button>
       <button onClick={()=>dispatch(cancelEffect())}>Cancel</button>
-      <input
-        type="text"
-        placeholder="Username"
-        onChange={handleUsernameChange}>
-      </input>
+      <div style={{display: 'flex', justifyContent: 'center', flexDirection: 'row'}}>
+        <input type="text" placeholder="Username" onChange={handleUsernameChange}></input>
+      </div>
+      <button onClick={()=>handleActionChannel()}>Action Channel</button>
+      <button onClick={()=>dispatch(eventChannel())}>Event Channel</button>
+      <button onClick={()=>dispatch(channel())}>Channel</button>
+      <p style={{textAlign: 'center', margin: 0}}>Uploading progress {filesUploadingProgress}</p>
+    </div>
     </div>
   )
 }

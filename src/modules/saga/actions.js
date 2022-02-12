@@ -1,3 +1,5 @@
+import { actionTypes } from "./actionTypes";
+
 export const getPosts = () => ({
     type:actionTypes.GET_POSTS,
 });
@@ -46,18 +48,22 @@ export const raceEffect = () => ({
     type:actionTypes.RACE,
 });
 
-export const actionTypes = {
-    GET_POSTS: 'GET_POSTS',
-    PUT: 'PUT',
-    PUT_RESOLVE: 'PUT_RESOLVE',
-    FORK: 'FORK',
-    APPLY: 'APPLY',
-    TAKE:'TAKE',
-    TAKE_LEADING: 'TAKE_LEADING',
-    TAKE_LATEST: 'TAKE_LATEST',
-    TAKE_EVERY: 'TAKE_EVERY',
-    ALL: 'ALL',
-    RACE: 'RACE',
-    CHANGE_USERNAME: 'CHANGE_USERNAME',
-    CANCEL: 'CANCEL'
+export const actionChannel = ({ dispatchId }) => {
+  console.log(`Received action: USER_POSTS_FETCH_REQUESTED; dispatch id: ${dispatchId}`);
+  return {
+    type: actionTypes.ACTION_CHANNEL,
+    payload: {id: dispatchId },
+  }
 }
+
+export const eventChannel = () => ({
+    type: actionTypes.EVENT_CHANNEL,
+});
+
+// export const eventChannelUnsubscribe = () => ({
+//     type: actionTypes.EVENT_CHANNEL_UNSUBSCRIBE,
+// });
+
+export const channel = () => ({
+    type: actionTypes.CHANNEL,
+});

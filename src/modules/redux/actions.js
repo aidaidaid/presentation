@@ -9,3 +9,8 @@ export const setComments = (payload) => ({
     type: types.SET_COMMENTS,
     payload
 });
+
+export const setUploading = (payload) => ({
+    type: types.SET_UPLOADING,
+    payload
+});
