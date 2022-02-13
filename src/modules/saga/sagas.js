@@ -8,8 +8,8 @@ import { actionTypes } from './actionTypes';
 
 
 const getData = async(url) => {
-    const response = await fetch(`https://jsonplaceholder.typicode.com/${url}`).then(res => res.json()).catch(e => console.warn("getData", e));
-    return response;    
+  const response = await fetch(`https://jsonplaceholder.typicode.com/${url}`).then(res => res.json()).catch(e => console.warn("getData", e));
+  return response;    
 };
 
 /////////////////////////////////////
@@ -18,74 +18,27 @@ function* applyWorker() { //apply и call с контекстом
     return {
       getUrl(id) {
         return `https://jsonplaceholder.typicode.com/posts/${id}`
-        // `${baseUrl}/users/${userId}/posts`
       },
-      getPosts(id) {
-        console.log('apply effect')
-        return fetch(this.getUrl(id)).then((response) => response.json())
+      getPosts(id, effectName) {
+        console.log(effectName);
+        return fetch(this.getUrl(id)).then((response) => response.json());
       },
     }
   }
   
   const fetchWithApply = fetchWithApplyFN();
-  const post = yield apply(fetchWithApply, fetchWithApply.getPosts, [5]);
-//   const post = yield call([fetchWithApply, fetchWithApply.getPosts], 5);
+  const post = yield apply(fetchWithApply, fetchWithApply.getPosts, [5, 'apply with context']);
+  // const post = yield call([fetchWithApply, fetchWithApply.getPosts], 5, 'call with context');
+  // const post = yield call(fetchWithApply.getPosts, 5, 'call without context'); //TypeError: Cannot read properties of null (reading 'getUrl')
   console.log(post);
 }
-//////////////////////////////////////
-// const fetchSmth = result => dispatch => //redux-thunk example
-//   delay(500).then(() => dispatch({type: 'SET_POSTS',payload:result}));
-//
-// function* takeWorker1() {
-//     try {
-//         const result = yield call(getData, `posts`);
-//         // const result = yield call(delayFN, 1000, 'posts' );
-//         // if(actionTypes.PUT){
-//         yield put(setPosts(result));
-//             // yield put(fetchSmth(result));
-//             console.log("state after PUT", yield select());
-//         // }
-//         // else if(actionTypes.PUT_RESOLVE){
-//         //     yield putResolve(fetchSmth(result));
-//         //     console.log("state after PUT_RESOLVE", yield select());
-//         // }
-//         // yield put(setPosts(result)); //вызывает dispatch
-//         console.log(result)
-//
-//     }
-//     catch (error) {
-//         console.warn(error);
-//     }
-// }
-//
-// function* takeWorker2() {
-//     try {
-//         const result = yield call(getData, `https://jsonplaceholder.typicode.com/posts`);
-//         // const result = yield fork(delayFN, 2000, 'posts' );
-//         // if(actionTypes.PUT){
-//         //     yield put(fetchSmth(result));
-//         //     console.log("state after PUT", yield select());
-//         // }
-//         // else if(actionTypes.PUT_RESOLVE){
-//             yield putResolve(fetchSmth(result));
-//             console.log("state after PUT_RESOLVE", yield select());
-//         // }
-//         // yield put(setPosts(result));
-//         console.log(result)
-//
-//     }
-//     catch (error) {
-//         console.warn(error);
-//     }
-// }
-
 
 ///////////////////////////////
 export function* loadPosts() {
-    // throw new Error(); //fork and spawn
-    const posts = yield call(getData, 'posts' );
-    console.log('load posts',posts);
-    return posts;
+  // throw new Error(); //fork and spawn
+  const posts = yield call(getData, 'posts' );
+  console.log('load posts',posts);
+  return posts;
 }
 
 // export function* loadComments() { //tima
@@ -95,47 +48,56 @@ export function* loadPosts() {
 // }
 
 function* loadComments() {
-    try {
-        const comments = yield call(getData, 'comments' );
-        console.log('load comments', comments);
-        yield put(setComments(comments));
-        // console.log('select effect', yield select());
-        console.log('select effect', yield select(store=>store.comments)); //select
-        // console.log(comments);
-    } finally { //cancelled
-        if (yield cancelled()) {
-            console.log('task was canceled');
-        }
-    }
+  try {
+    const comments = yield call(getData, 'comments' );
+    console.log('load comments', comments);
+    yield put(setComments(comments));
+    // console.log('select effect', yield select());
+    console.log('select effect', yield select(store=>store.comments)); //select
+    // console.log(comments);
+  } finally { //cancelled
+      if (yield cancelled()) {
+        console.log('task was canceled');
+      }
+  }
 }
 
 function* forkWorker() { //fork and call
-        console.log("run parallel tasks");
-        yield fork(loadPosts); //call
-        const comments = yield fork(loadComments);
-        console.log("fininsh parallel tasks");
-        yield take(actionTypes.CANCEL);
-        yield cancel(comments); //cancel
+  console.log("run parallel tasks");
+  yield fork(loadPosts); //call, spawn
+  const comments = yield fork(loadComments);
+  console.log("fininsh parallel tasks");
+  yield take(actionTypes.CANCEL);
+  yield cancel(comments); //cancel - task должен быть не блокирующим
 }
 
-// export function* forkWorker() { //join
-//     console.log("run parallel tasks");
-//     const task = yield fork(loadPosts);
-//     yield spawn(loadComments);
-//     const posts = yield join(task) //блокирует неблокирующую задачу и получает ее результат
-//     console.log("fininsh parallel tasks", posts);
+// function* forkWorker() { //join
+//   console.log("run parallel tasks");
+//   const task = yield fork(loadPosts);
+//   yield spawn(loadComments);
+//   const posts = yield join(task) //блокирует неблокирующую задачу и получает ее результат
+//   console.log("join result:", posts);
+//   console.log("fininsh parallel tasks");
 // }
 
 //////////////////////////////////
 
 function* changeUsername(action) {
   console.log('username', action.payload.username)
-  yield call(saveName, action.payload.username)
+  yield call(saveName, action.payload.username) //имитация работы с сервером
 }
 
-export function* throttleDebounceWatcher() { //throttle and debounce
-  yield throttle(4000, actionTypes.CHANGE_USERNAME, changeUsername); //будет вызываться одно действие в течении n-секунд
-  // yield debounce(2000, actionTypes.CHANGE_USERNAME, changeUsername); //ожидает окончания ввода(действия) и n-секунд
+export function* throttleDebounceWatcher() { //throttle and debounce - каждое изменение поля будет диспатчить экшн с новыи значением
+  // yield throttle(2000, actionTypes.CHANGE_USERNAME, changeUsername); //будет вызываться одно действие в течении n-секунд
+  yield debounce(2000, actionTypes.CHANGE_USERNAME, changeUsername); //отменяет предыдущие действия / ожидает окончания ввода и n-секунд
+}
+
+export function* forkWatcher() {
+  yield takeEvery(actionTypes.FORK, forkWorker);
+}
+
+export function* applyWatcher() {
+  yield takeEvery(actionTypes.APPLY, applyWorker);
 }
 
 /////////////////////////////////////////////////////////////
@@ -173,15 +135,7 @@ function* raceWorker() {
     call(loadComments),
   ])
 }
-////////////////////////////////
 
-export function* forkWatcher() {
-    yield takeEvery(actionTypes.FORK, forkWorker);
-}
-
-export function* applyWatcher() {
-    yield takeEvery(actionTypes.APPLY, applyWorker);
-}
 
 
 /////////////////////// CHANNELS ////////////////////////////////
@@ -189,7 +143,7 @@ export function* applyWatcher() {
 /////////////////////// Channel ///////////////////
 
 const handleProgress = (fileUploadingChannel, progressValue) => {
-  fileUploadingChannel.put({
+  fileUploadingChannel.put({ //кидает сообщения в канал
     value: progressValue,
   })
 }
@@ -203,7 +157,7 @@ function* channelWorker(fileUploadingChannel) {
 
 export function* channelWatcher() {
   const fileUploadingChannel = yield call(channel)
-  yield fork(channelWorker, fileUploadingChannel)
+  yield fork(channelWorker, fileUploadingChannel) //channelWorker ловит сообщения и диспатчит новый экшн в стор для обновления прогресса
 
   while (true) {
     yield take(actionTypes.CHANNEL)

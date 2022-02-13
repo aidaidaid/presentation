@@ -56,13 +56,11 @@ const App = () => {
         <button onClick={()=>dispatch(raceEffect())}>Racer</button>
       </div>
     <div>
-      {/* <button onClick={()=>action("PUT")}>Put</button>
-      <button onClick={()=>action("PUT_RESOLVE")}>PutResolve</button> */}
       <button onClick={()=>dispatch(forkEffect())}>Fork/Call/Spawn</button>
-      <button onClick={()=>dispatch(applyEffect())}>Apply</button>
       <button onClick={()=>dispatch(cancelEffect())}>Cancel</button>
+      <button onClick={()=>dispatch(applyEffect())}>Call/Apply</button>
       <div style={{display: 'flex', justifyContent: 'center', flexDirection: 'row'}}>
-        <input type="text" placeholder="Username" onChange={handleUsernameChange}></input>
+        <input type="text" placeholder="Throttle/Debounce" onChange={handleUsernameChange}></input>
       </div>
       <button onClick={()=>handleActionChannel()}>Action Channel</button>
       <button onClick={()=>dispatch(eventChannel())}>Event Channel</button>

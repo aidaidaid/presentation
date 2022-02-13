@@ -60,10 +60,6 @@ export const eventChannel = () => ({
     type: actionTypes.EVENT_CHANNEL,
 });
 
-// export const eventChannelUnsubscribe = () => ({
-//     type: actionTypes.EVENT_CHANNEL_UNSUBSCRIBE,
-// });
-
 export const channel = () => ({
     type: actionTypes.CHANNEL,
 });
