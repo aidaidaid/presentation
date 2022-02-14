@@ -5,6 +5,7 @@ import { uploadFile } from '../api/file-uploading';
 import { saveName } from '../api/user';
 import { setComments, setPosts, setUploading } from '../redux/actions';
 import { actionTypes } from './actionTypes';
+import {SagaMonitor} from 'redux-saga'
 
 
 const getData = async(url) => {
@@ -100,7 +101,7 @@ export function* applyWatcher() {
   yield takeEvery(actionTypes.APPLY, applyWorker);
 }
 
-/////////////////////////////////////////////////////////////
+/////////////////////////ALL AND RACE////////////////////////////////////
 
 function* takeWorker() {
   const comments = yield call(getData, 'comments');
@@ -227,10 +228,10 @@ function* eventChannelWorker() {
 }
 
 export function* eventChannelWatcher() {
-    yield takeEvery(actionTypes.EVENT_CHANNEL, eventChannelWorker);
+  yield takeEvery(actionTypes.EVENT_CHANNEL, eventChannelWorker);
 }
 
-
+/////////////////////////////////WATCHERS//////////////////////////////////
 
 /////////////////////////////////////////////////////////////// TAKE EFFECTS
 
@@ -258,8 +259,8 @@ export function* takeEveryWatcher() {
   yield takeEvery(actionTypes.TAKE_EVERY, takeWorker);
 }
 
-//////////////////////////////////////////////////////////// ALL / RACE EFFECTS
-
+// //////////////////////////////////////////////////////////// ALL / RACE EFFECTS
+//
 export function* allWatcher() {
   yield takeEvery(actionTypes.ALL, allWorker);
 }
