@@ -1,30 +1,11 @@
 import './App.css';
 import { useDispatch, useSelector } from 'react-redux';
-import { forkEffect, getPosts, applyEffect, cancelEffect, takeEffect, takeLeadingEffect, takeLatestEffect, takeEveryEffect, allEffect, raceEffect, getPostsActionChannel, actionChannel, eventChannel, eventChannelUnsubscribe, channel } from './modules/saga/actions';
-import { store } from './modules/redux';
+import { forkEffect, applyEffect, cancelEffect, takeEffect, takeLeadingEffect, takeLatestEffect, takeEveryEffect, allEffect, raceEffect, getPostsActionChannel, actionChannel, eventChannel, eventChannelUnsubscribe, channel } from './modules/saga/actions';
 import { actionTypes } from './modules/saga/actionTypes';
 
 const App = () => {
   const dispatch = useDispatch();
   const filesUploadingProgress = useSelector((state) => state.filesUploading);
-
-  // const getPost = () => {
-  //   debugger
-  //   // debugger
-  //   // dispatch(getPosts());
-  //   store.dispatch({"PUT"});
-  // }
-
-  // const getPostResolve = () => {
-  //   debugger
-
-  //   store.dispatch({"PUT_RESOLVE"});
-  // }
-
-
-  const action = e => {
-    store.dispatch({type:e });
-  }
 
   const handleUsernameChange = (event) => {
     dispatch({
@@ -41,7 +22,7 @@ const App = () => {
         dispatch(actionChannel({userId: 1, dispatchId}))
       }
     } catch (e) {
-      console.log('error', e.message) // error Channel's Buffer overflow!
+      console.log('ERROR!!!', e.message) // error Channel's Buffer overflow!
     }
   }
   

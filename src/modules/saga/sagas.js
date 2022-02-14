@@ -50,6 +50,7 @@ export function* loadPosts() {
 
 function* loadComments() {
   try {
+    // yield cancel();
     const comments = yield call(getData, 'comments' );
     console.log('load comments', comments);
     yield put(setComments(comments));
@@ -89,8 +90,8 @@ function* changeUsername(action) {
 }
 
 export function* throttleDebounceWatcher() { //throttle and debounce - каждое изменение поля будет диспатчить экшн с новыи значением
-  // yield throttle(2000, actionTypes.CHANGE_USERNAME, changeUsername); //будет вызываться одно действие в течении n-секунд
-  yield debounce(2000, actionTypes.CHANGE_USERNAME, changeUsername); //отменяет предыдущие действия / ожидает окончания ввода и n-секунд
+  yield throttle(2000, actionTypes.CHANGE_USERNAME, changeUsername); //будет вызываться одно действие в течении n-секунд
+  // yield debounce(2000, actionTypes.CHANGE_USERNAME, changeUsername); //отменяет предыдущие действия / ожидает окончания ввода и n-секунд
 }
 
 export function* forkWatcher() {
@@ -143,7 +144,7 @@ function* raceWorker() {
 
 /////////////////////// Channel ///////////////////
 
-const handleProgress = (fileUploadingChannel, progressValue) => {
+const handleProgress = (fileUploadingChannel, progressValue) => { //вызывается каждый раз, когда прогресс инкрементируется
   fileUploadingChannel.put({ //кидает сообщения в канал
     value: progressValue,
   })
@@ -152,7 +153,7 @@ const handleProgress = (fileUploadingChannel, progressValue) => {
 function* channelWorker(fileUploadingChannel) {
   while (true) {
     const payload = yield take(fileUploadingChannel)
-    yield put(setUploading(payload.value))
+    yield put(setUploading(payload.value)) //обновляет значение прогресса
   }
 }
 
@@ -181,9 +182,9 @@ function* actionChannelWorker(action) {
 export function* actionChannelWatcher() {
   const requestChannel = yield actionChannel(actionTypes.ACTION_CHANNEL,
     // buffers.none() // no buffering, new messages will be lost if there are no pending takers
-    // buffers.fixed(2) // new messages will be buffered up to limit, overflow will raise an Error
-    // buffers.expanding(2) // like fixed but Overflow will cause the buffer to expand dynamically
-    buffers.dropping(2) // same as fixed but Overflow will silently drop the messages
+    // buffers.fixed(2) // new messages will be buffered up to limit, overflow will raise an Error //при получении третьего буфер уже переполнен
+    buffers.expanding(2) // like fixed but Overflow will cause the buffer to expand dynamically
+    // buffers.dropping(2) // same as fixed but Overflow will silently drop the messages
     // buffers.sliding(2) // same as fixed but Overflow will insert the new message at the end and drop the oldest message in the buffer
   );
   while (true) {
@@ -204,7 +205,7 @@ const createEventProviderChannel = (eventProvider) => {
       emitter(event.payload) //соединяем сторонний провайдер событий с сагой, отправка события в канал
     }
     eventProvider.subscribe('value', valueHandler)
-    return () => {
+    return () => { //запускается на закрытии канала
       eventProvider.unsubscribe('value', valueHandler)
       console.log('unsubscribed')
     }
